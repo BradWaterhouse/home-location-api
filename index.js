@@ -25,83 +25,37 @@ app.get('/test', (req, res) => {
     });
 });
 
-// app.get('/calendar/select', async (req, res) => {
-//     connection.query(`SELECT * FROM calendar`, (error, results, fields) => {
-//         if (error) {
-//             res.send(error.message);
-//         }
-//         res.send(results);
-//     });
-// });
-//
-// app.post('/calendar/events', async (req, res) => {
-//     const request = req.body;
-//
-//     connection.query(`SELECT * FROM calendar_event WHERE calendar_id = ?`, [request.id], (error, results, fields) => {
-//         if (error) {
-//             res.send(error.message);
-//         }
-//         res.send(results);
-//     });
-// });
-//
-// app.post('/calendar/insert', async (req, res) => {
-//     const request = req.body;
-//
-//     connection.query(`INSERT INTO calendar (name) VALUES (?)`, [request.name], (error, results, fields) => {
-//         if (error) {
-//             res.send(error.message);
-//         }
-//         res.send({data: "new calendar added"});
-//     });
-// });
-//
-// app.post('/event/insert', async (req, res) => {
-//     const request = req.body;
-//
-//     connection.query(`
-//         INSERT INTO calendar_event (calendar_id, title, description, start_date, start_time, end_date)
-//         VALUES (?, ?, ?, ?, ?, ?)`,
-//         [
-//             request.calendarId,
-//             request.title,
-//             request.description,
-//             request.start_date,
-//             request.start_time,
-//             request.end_date
-//         ],
-//         (error, results, fields) => {
-//         if (error) {
-//             res.send({error: "something has gone wrong!"});
-//         }
-//         res.send({success: "new calendar event added"});
-//     });
-// });
-//
-// app.post('/event/edit', async (req, res) => {
-//     const request = req.body;
-//
-//     const query = "UPDATE calendar_event SET `title` = ?, `description` = ?, `date` = ?, `time` = ?WHERE id = ?)"
-//
-//     connection.query(query, [request.title, request.description, request.date, request.time, request.id],
-//         (error, results, fields) => {
-//             if (error) {
-//                 res.send(error.message);
-//             }
-//             res.send({data: "calendar event edited"});
-//         });
-// });
-//
-//
-// app.post('/event/delete', async (req, res) => {
-//     const request = req.body;
-//
-//     connection.query(`DELETE FROM calendar_event WHERE id = ?`, [request.id], (error, results, fields) => {
-//             if (error) {
-//                 res.send(error.message);
-//             }
-//             res.send({data: "calendar event deleted"});
-//         });
-// });
+app.get('/:device_id/location/history', async (req, res) => {
+    connection.query(`
+      SELECT device.user, device.type, location.name, location_events.date_time AS entered_at
+      FROM location_events
+      JOIN location ON location.id = location_events.location_id
+      JOIN device ON device.id = location_events.device_id
+      WHERE device_id = ?
+      ORDER BY date_time DESC
+      LIMIT 15`, [req.params.device_id], (error, results, fields) => {
+        if (error) {
+            res.send(error.message);
+        }
+        res.send(results);
+    });
+});
+
+app.get('/:device_id/:location_id/add', async (req, res) => {
+
+    connection.query(`
+        INSERT INTO location_events (device_id, location_id)
+        VALUES (?, ?)`,
+        [
+            req.params.device_id,
+            req.params.location_id
+        ],
+        (error, results, fields) => {
+        if (error) {
+            res.send({error: "something has gone wrong!"});
+        }
+            res.send('New event added ✅');
+    });
+});
 
 app.listen(8888, () => console.log('alive on http://localhost:8888 💻'));
