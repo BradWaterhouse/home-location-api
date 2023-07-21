@@ -27,7 +27,7 @@ app.get('/test', (req, res) => {
 
 app.get('/:device_id/location/history', async (req, res) => {
     connection.query(`
-      SELECT device.user, device.type, location.name, location_events.date_time AS entered_at
+      SELECT device.user AS device_user, device.type AS device_type, location.name AS location_name, location_events.date_time AS entered_at
       FROM location_events
       JOIN location ON location.id = location_events.location_id
       JOIN device ON device.id = location_events.device_id
